@@ -15,6 +15,8 @@ export default function App() {
   // var faseDoJogo = 0;
   const [faseDoJogo, setFaseDoJogo] = useState(0); // estado que guarda o indice da imagem atual
   const [entrada, setEntrada] = useState(''); // estado que guarda o texto inputado na caixa de entrada
+  const [fimDeJogo, setFimDeJogo] = useState(false);
+  const [mensagem, setMensagem] = useState('Adivinhe a letra');
 
   // Função para sortear uma letra do alfabeto
   const sortearLetra = () => {
@@ -26,11 +28,27 @@ export default function App() {
 
   const testaFimDeJogo = () => {
     //testar se acertou a letra
-    if (entrada.toUpperCase() === letraSorteada) console.log('acertou');
+    if (entrada.toUpperCase() === letraSorteada) {
+      setFimDeJogo(true);
+      setMensagem('Acertou');
+    } else {
+      if (faseDoJogo == 6) setFimDeJogo(true);
+      else setFaseDoJogo(faseDoJogo + 1);
+    }
+    console.log(letraSorteada);
+    setEntrada('')
+  };
+
+  const iniciarNovoJogo = () => {
+    setFaseDoJogo(0);
+    setLetraSorteada(sortearLetra());
+    setFimDeJogo(false);
+    setMensagem('Adivinhe a letra');
   };
 
   return (
     <View style={estilos.container}>
+      <Text style={estilos.mensagem}>{mensagem}</Text>
       <Image source={listaDeImagens[faseDoJogo]} />
       <TextInput
         style={estilos.caixaEntrada}
@@ -39,24 +57,22 @@ export default function App() {
         onChangeText={setEntrada}
         textAlign="center" // centraliza a letra
       />
-      <Button
-        title="Jogar"
-        onPress={() => {
-          if (faseDoJogo == 6) setFaseDoJogo(0);
-          else setFaseDoJogo(faseDoJogo + 1);
-          console.log(letraSorteada);
-          testaFimDeJogo();
-          // faseDoJogo++;
-          // console.log(faseDoJogo)
-        }}
-      />
-      <Button
-        title="Novo jogo"
-        onPress={() => {
-          setFaseDoJogo(0);
-          setLetraSorteada(sortearLetra());
-        }}
-      />
+
+      {fimDeJogo ? (
+        <Button
+          title="Novo jogo"
+          onPress={() => {
+            iniciarNovoJogo();
+          }}
+        />
+      ) : (
+        <Button
+          title="Jogar"
+          onPress={() => {
+            testaFimDeJogo();
+          }}
+        />
+      )}
     </View>
   );
 }
@@ -74,8 +90,18 @@ const estilos = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'black',
     borderRadius: 8,
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
     backgroundColor: '#474',
+  },
+  mensagem: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    borderRadius: 8,
+    backgroundColor: '#474',
+    padding: 8,
+    color: 'white',
+    width:'90%',
+    textAlign:'center'
   },
 });
