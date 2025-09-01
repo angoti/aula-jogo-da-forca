@@ -11,50 +11,88 @@ const listaDeImagens = [
   require('./assets/cabecacorpodoisbracosduaspernas.png'),
 ];
 
+const listaDePalavras = [
+  'MAÇÃ',
+  'CORAÇÃO',
+  'BANANA',
+  'PROGRAMAÇÃO',
+  'LÓGICA',
+  'REACT',
+  'SPRING',
+  'NATIVO',
+  'FORÇA',
+  'RAZÃO',
+];
+
+const normalizar = (str) =>
+  str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  //transforma a palavra retirando os acentos. Veja https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize#description
+
 export default function App() {
-  // var faseDoJogo = 0;
   const [faseDoJogo, setFaseDoJogo] = useState(0); // estado que guarda o indice da imagem atual
   const [entrada, setEntrada] = useState(''); // estado que guarda o texto inputado na caixa de entrada
   const [fimDeJogo, setFimDeJogo] = useState(false);
-  const [mensagem, setMensagem] = useState('Adivinhe a letra');
+  const [mensagem, setMensagem] = useState('Adivinhe a palavra');
+  const [letrasCertas, setLetrasCertas] = useState([]);
 
-  // Função para sortear uma letra do alfabeto
-  const sortearLetra = () => {
-    const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    return letras[Math.floor(Math.random() * letras.length)];
-  };
+  // Função que sorteia uma palavra aleatória
+  function sortearPalavra() {
+    const indice = Math.floor(Math.random() * listaDePalavras.length);
+    return listaDePalavras[indice];
+  }
 
-  const [letraSorteada, setLetraSorteada] = useState(sortearLetra()); // estado que guarda a letra sorteada
+  const [palavraSorteada, setPalavraSorteada] = useState(sortearPalavra());
 
   const testaFimDeJogo = () => {
     //testar se acertou a letra
-    if (entrada.toUpperCase() === letraSorteada) {
-      setFimDeJogo(true);
-      setMensagem('Acertou');
+    let letra = normalizar(entrada);
+    let palavraNormalizada = normalizar(palavraSorteada);
+    console.log(letra);
+    console.log(palavraNormalizada);
+    if (palavraNormalizada.includes(letra)) {
+      let novasLetrasCertas = [...letrasCertas, letra];
+      setLetrasCertas(novasLetrasCertas);
+      if (
+        palavraNormalizada
+          .split('')
+          .every((letra) => novasLetrasCertas.includes(letra))
+      ) {
+        setFimDeJogo(true);
+        setMensagem('Acertou');
+      }
     } else {
       if (faseDoJogo == 6) setFimDeJogo(true);
       else setFaseDoJogo(faseDoJogo + 1);
     }
-    console.log(letraSorteada);
-    setEntrada('')
+    setEntrada('');
   };
 
   const iniciarNovoJogo = () => {
     setFaseDoJogo(0);
-    setLetraSorteada(sortearLetra());
     setFimDeJogo(false);
-    setMensagem('Adivinhe a letra');
+    setLetrasCertas([]);
+    setPalavraSorteada(sortearPalavra());
+    setMensagem('Adivinhe a palavra');
+  };
+
+  const palavraMascarada = () => {
+    return palavraSorteada
+      .split('')
+      .map((letra) =>
+        letrasCertas.includes(normalizar(letra)) ? letra : '_ '
+      );
   };
 
   return (
     <View style={estilos.container}>
       <Text style={estilos.mensagem}>{mensagem}</Text>
       <Image source={listaDeImagens[faseDoJogo]} />
+      <Text style={estilos.mensagem}>{palavraMascarada()}</Text>
       <TextInput
         style={estilos.caixaEntrada}
         maxLength={1} // limita a apenas 1 caractere
         value={entrada}
-        onChangeText={setEntrada}
+        onChangeText={(letra) => setEntrada(letra.toUpperCase())}
         textAlign="center" // centraliza a letra
       />
 
@@ -101,7 +139,7 @@ const estilos = StyleSheet.create({
     backgroundColor: '#474',
     padding: 8,
     color: 'white',
-    width:'90%',
-    textAlign:'center'
+    width: '90%',
+    textAlign: 'center',
   },
 });
